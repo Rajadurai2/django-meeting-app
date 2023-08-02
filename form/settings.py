@@ -23,16 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '5&41du-&cv-cazt$r@k84h*gz-s!*jk2b)131ek^2-lpou#2y4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 
-ALLOWED_HOSTS = [s.getsockname()[0], '127.0.0.1', 'localhost']
+#ALLOWED_HOSTS = [s.getsockname()[0], '127.0.0.1', 'localhost']
 s.close()
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
