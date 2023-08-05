@@ -94,7 +94,7 @@ def create_form(request):
         question.save()
         question.choices.add(choices)
         question.save()
-        form = Form(code = code, title = title, creator=request.user,creator_ip=get_user_ip())
+        form = Form(code = code, title = title, creator=request.user,creator_ip=get_client_ip(request))
         form.save()
         form.questions.add(question)
         form.save()
@@ -361,7 +361,7 @@ def add_question(request, code):
         question.save()
         formInfo.questions.add(question)
         formInfo.save()
-        return JsonResponse({'question': {'question': "Untitled Question", "question_type": "multiple choice", "required": False, "id": question.id}, 
+        return JsonResponse({'question': {'question': "Untitled Question", "question_type": "multiple choice", "required": False, "id": question.id},
         "choices": {"choice": "Option 1", "is_answer": False, 'id': choices.id}})
 
 def delete_question(request, code, question):
@@ -511,8 +511,8 @@ def get_client_ip(request):
 
 def submit_form(request, code):
     formInfo = Form.objects.filter(code = code)
-    user_ip_address=get_user_ip()
-    
+    user_ip_address=get_client_ip(request)
+
     #Checking if form exists
     if formInfo.count() == 0:
         return HttpResponseRedirect(reverse('404'))
@@ -521,9 +521,15 @@ def submit_form(request, code):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
     if formInfo.creator_ip!=user_ip_address:
-        return HttpResponseRedirect(reverse('999'))
-    
-    else:    
+        response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user)
+        response.save
+        return render(request, "error/999.html", {
+                "form": formInfo,
+                "code": code,
+                "response":response
+            })
+
+    else:
         if request.method == "POST":
             code = ''.join(random.choice(string.ascii_letters + string.digits) for x in range(20))
             if formInfo.authenticated_responder:
@@ -548,10 +554,11 @@ def submit_form(request, code):
                     response.save()
             return render(request, "index/form_response.html", {
                 "form": formInfo,
-                "code": code
+                "code": code,
+                "response": response,
             })
 
-        
+
 
 def responses(request, code):
     if not request.user.is_authenticated:
@@ -578,7 +585,7 @@ def responses(request, code):
         keys = choiceAnswered[answr].values()
         for choice in choiceAnswered[answr]:
             filteredResponsesSummary[answr][choice] = choiceAnswered[answr][choice]
-    
+
     #bala=json.dump(responsesSummary)
     #Checking if form creator is user
     if formInfo.creator != request.user:
@@ -796,7 +803,7 @@ def event_registration_template(request):
         agreement.save()
         agreement.choices.add(accept_agreement)
         agreement.save()
-        form = Form(code = code, title = "Event Registration", creator=request.user, background_color="#fdefc3", 
+        form = Form(code = code, title = "Event Registration", creator=request.user, background_color="#fdefc3",
         confirmation_message="We have received your registration.\n\
 Insert other information here.\n\
 \n\
