@@ -2,16 +2,17 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.test, ),                                                                             #done
-    path('index',views.index,name='index'),                                               #done
+    path('', views.test, ),                                                                            
+    path('index',views.index,name='index'),      
+    path('form/<str:code>/export_csv', views.exportcsv,name='export_csv'),                                                                                 
     path('features',views.features,name='features'),                                                    
-    path('login', views.login_view, name="login"),                                               #done
-    path('register', views.register, name="register"),                                               #done
-    path('logout', views.logout_view, name="logout"),                                               #done
-    path('form/create', views.create_form, name="create_form"),                                               #done
+    path('login', views.login_view, name="login"),                                              
+    path('register', views.register, name="register"),                                              
+    path('logout', views.logout_view, name="logout"),                                              
+    path('form/create', views.create_form, name="create_form"),                                               
     path('form/create/contact', views.contact_form_template, name="contact_form_template"),
-    path('form/create/feedback', views.customer_feedback_template, name="customer_feedback_template"),                                               #done
-    path('form/create/event', views.event_registration_template, name="event_registration_template"),                                               #done
+    path('form/create/feedback', views.customer_feedback_template, name="customer_feedback_template"),                                              
+    path('form/create/event', views.event_registration_template, name="event_registration_template"),                                               
     path('form/<str:code>/edit', views.edit_form, name="edit_form"),
     path('form/<str:code>/edit_title', views.edit_title, name="edit_title"),
     path('form/<str:code>/edit_description', views.edit_description, name="edit_description"),
