@@ -522,12 +522,12 @@ def submit_form(request, code):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
     if formInfo.creator_ip!=user_ip_address:
-        response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user)
-        response.save
+        # response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user)
+        # response.save
         return render(request, "error/999.html", {
                 "form": formInfo,
                 "code": code,
-                "response":response
+                # "response":response
             })
 
     else:
