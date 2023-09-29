@@ -1,5 +1,7 @@
 
 {% extends 'index/layout.html' %}
+{% load socialaccount %}
+
 {% block body %}
 
 
@@ -22,6 +24,13 @@
         </div>
         <div class="form-group">
             <p class="form-label">Don't have account yet? <a class="link" href = "{% url 'register' %}" style="color: azure;">Register</a></p>
+            <p>Or</p>
+            <button class="btn btn-outline-info">
+                <a href="{% provider_login_url 'google'%}?next=/">
+                    <i class="fab fa-google"></i>
+                    Login with Google
+                </a>
+            </button>
             <input type="submit" value="Login" class="btn btn-dark form-control">
         </div>
     </form>
