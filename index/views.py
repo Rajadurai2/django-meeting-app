@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 from django.urls import reverse
@@ -43,6 +43,31 @@ def login_view(request):
                 "message": "Invalid username and/or password"
             })
     return render(request, "index/login.html")
+
+
+def user_login(request):
+    
+    print('PATH=',request.path)
+    data = request.GET.get('data',None)
+    print(data)
+    if request.user.is_authenticated:
+        if 'next' in request.POST:
+            return redirect(request.POST['next'])
+    if request.method == "POST":
+        username = request.POST["username"].lower()
+        password = request.POST["password"]
+        user = authenticate(request, username = username, password = password)
+        # if user authentication success
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect(reverse('login'))
+        else:
+            return render(request, "index/login.html", {
+                "message": "Invalid username and/or password"
+            })
+    return render(request, "index/user_login.html")
+
+
 
 def register(request):
     #Check if the user is logged in
@@ -477,7 +502,7 @@ def feedback(request, code):
         return HttpResponseRedirect(reverse('404'))
     else: formInfo = formInfo[0]
     #Checking if form creator is user
-    if formInfo.creator != request.user:
+    if formInfo.creator != request.user:                                                                 
         return HttpResponseRedirect(reverse("403"))
     if not formInfo.is_quiz:
         return HttpResponseRedirect(reverse("edit_form", args = [code]))
@@ -485,11 +510,13 @@ def feedback(request, code):
         if request.method == "POST":
             data = json.loads(request.body)
             question = formInfo.questions.get(id = data["question_id"])
-            question.feedback = data["feedback"]
+            question.feedback = data["feedback"]         
             question.save()
             return JsonResponse({'message': "Success"})
 
 def view_form(request, code):
+    print(request.path)
+    data = request.path
     formInfo = Form.objects.filter(code = code)
     #Checking if form exists
     if formInfo.count() == 0:
@@ -497,7 +524,7 @@ def view_form(request, code):
     else: formInfo = formInfo[0]
     if formInfo.authenticated_responder:
         if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse("login"))
+            return render(request,'index/user_login.html',{"data":data})
     return render(request, "index/view_form.html", {
         "form": formInfo
     })
