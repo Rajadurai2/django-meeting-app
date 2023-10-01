@@ -3,9 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
-from .models import User, Choices, Questions, Answer, Form, Responses,Hostip,Clientip
-from django.core import serializers
-from index.functions.get_ip import get_user_ip
+from .models import User, Choices, Questions, Answer, Form, Responses
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+
 import json
 import random
 import string
@@ -539,8 +541,8 @@ def get_client_ip(request):
 
 def submit_form(request, code):
     formInfo = Form.objects.filter(code = code)
+    form=formInfo[0]
     user_ip_address=get_client_ip(request)
-
     #Checking if form exists
     if formInfo.count() == 0:
         return HttpResponseRedirect(reverse('404'))
@@ -548,27 +550,34 @@ def submit_form(request, code):
     if formInfo.authenticated_responder:
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
-    if formInfo.creator_ip!=user_ip_address:
-        # response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user)
-        # response.save
+    if formInfo.creator_ip!=user_ip_address:    
         return render(request, "error/999.html", {
                 "form": formInfo,
                 "code": code,
                 # "response":response
             })
-
     else:
         if request.method == "POST":
             code = ''.join(random.choice(string.ascii_letters + string.digits) for x in range(20))
+            email = request.user.email
+            allow = False
             if formInfo.authenticated_responder:
-                response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user)
-                response.save()
+                
+                if not Responses.objects.filter(responder_email=email, response_to=formInfo).exists():
+                    print("not submitted")
+                    response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder = request.user,responder_email=email)
+                    response.save()  
+                    allow=True
+                else:
+                    formInfo.confirmation_message = "You have already submitted the form "
+                    print("already submitted")
+                             
             else:
                 if not formInfo.collect_email:
                     response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request))
                     response.save()
                 else:
-                    response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder_email=request.POST["email-address"])
+                    response = Responses(response_code = code, response_to = formInfo, responder_ip = get_client_ip(request), responder_email=email,responder = request.user)
                     response.save()
             for i in request.POST:
                 #Excluding csrf token
@@ -576,10 +585,20 @@ def submit_form(request, code):
                     continue
                 question = formInfo.questions.get(id = i)
                 for j in request.POST.getlist(i):
-                    answer = Answer(answer=j, answer_to = question)
-                    answer.save()
-                    response.response.add(answer)
-                    response.save()
+                    if formInfo.authenticated_responder:
+                        if allow == True:
+                            answer = Answer(answer=j, answer_to = question)
+                            answer.save()
+                            response.response.add(answer)
+                            response.save()
+                        else:
+                            response = None
+                    else:
+                        answer = Answer(answer=j, answer_to = question)
+                        answer.save()
+                        response.response.add(answer)
+                        response.save()
+
             return render(request, "index/form_response.html", {
                 "form": formInfo,
                 "code": code,
@@ -658,7 +677,7 @@ def exportcsv(request,code):
     for response in responses:
         response_data = [
         response.response_code,
-        response.responder.username if response.responder else 'Anonymous',
+        response.responder.user if response.responder else 'Anonymous',
         response.responder_email if response.responder_email else '',
         response.responder_ip if response.responder_ip else ''
     ]
