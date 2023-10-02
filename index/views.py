@@ -229,6 +229,11 @@ def edit_setting(request, code):
         return HttpResponseRedirect(reverse("403"))
     if request.method == "POST":
         data = json.loads(request.body)
+        print(data)
+        print(data["creator_ip"])
+
+        print(data["confirmation_message"])    
+        formInfo.creator_ip =data["creator_ip"]
         formInfo.collect_email = data["collect_email"]
         formInfo.is_quiz = data["is_quiz"]
         formInfo.authenticated_responder = data["authenticated_responder"]
@@ -550,7 +555,14 @@ def submit_form(request, code):
     if formInfo.authenticated_responder:
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
-    if formInfo.creator_ip!=user_ip_address:    
+    ip_string = formInfo.creator_ip
+    ip_list =ip_string.split(',')
+    print(ip_list)
+    print(user_ip_address)
+    if user_ip_address in ip_list:
+        print("yes")
+    #if formInfo.creator_ip!=user_ip_address: 
+    if not user_ip_address in ip_list:
         return render(request, "error/999.html", {
                 "form": formInfo,
                 "code": code,
@@ -677,7 +689,7 @@ def exportcsv(request,code):
     for response in responses:
         response_data = [
         response.response_code,
-        response.responder.user if response.responder else 'Anonymous',
+        response.responder.username if response.responder else 'Anonymous',
         response.responder_email if response.responder_email else '',
         response.responder_ip if response.responder_ip else ''
     ]

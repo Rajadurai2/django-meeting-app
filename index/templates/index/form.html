@@ -180,12 +180,20 @@
                         <input type="checkbox" id="authenticated_responder" {% if form.authenticated_responder %} checked {% endif %}>
                         <label for="authenticated_responder" class="setting-form-label">Respondent account must be authenticated. (Signed in required)</label>
                     </div>
+
                 </div>
                 <div class="modal-division">
                     <div class="form-group">
                         <h3 class="modal-subtitle">Confirmation message:</h3>
                         <textarea rows="1" class="confirmation-msg-input edit-on-click textarea-adjust" spellcheck="false"
                          id="comfirmation_message">{{form.confirmation_message}}</textarea>
+                    </div>
+                </div>
+                <div class="modal-division">
+                    <div class="form-group">
+                        <h3 class="modal-subtitle">Ip Address </h3>
+                        <textarea rows="1" class="confirmation-msg-input edit-on-click textarea-adjust" spellcheck="false"
+                         id="creator_ip">{{form.creator_ip}}</textarea>
                     </div>
                 </div>
                 <div class="modal-division">

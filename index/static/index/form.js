@@ -108,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "is_quiz": document.querySelector("#is_quiz").checked,
                 "authenticated_responder": document.querySelector("#authenticated_responder").checked,
                 "confirmation_message": document.querySelector("#comfirmation_message").value,
+                "creator_ip": document.querySelector("#creator_ip").value,
                 "edit_after_submit": document.querySelector("#edit_after_submit").checked,
                 "allow_view_score": document.querySelector("#allow_view_score").checked,
             })
@@ -164,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "DELETE",
                 headers: {'X-CSRFToken': csrf}
             })
-            .then(() => window.location = "/")
+            .then(() => window.location = "/index")
         }
     })
     const editQuestion = () => {
